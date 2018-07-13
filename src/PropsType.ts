@@ -18,4 +18,5 @@ export interface PropsType {
   className?: string;
   style?: React.CSSProperties;
   damping: number;
+  disable?: boolean;
 }

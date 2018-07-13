@@ -45,6 +45,7 @@ export default class PullToRefresh extends React.Component<PropsType, any> {
     distanceToRefresh: 25,
     damping: 100,
     indicator: INDICATOR as Indicator,
+    disable: false,
   } as PropsType;
 
   // https://github.com/yiminghe/zscroller/blob/2d97973287135745818a0537712235a39a6a62a1/src/Scroller.js#L355
@@ -61,8 +62,6 @@ export default class PullToRefresh extends React.Component<PropsType, any> {
   _startScreenY: any;
   _lastScreenY: any;
   _timer: any;
-
-  _isMounted = false;
 
   shouldUpdateChildren = false;
 
@@ -84,7 +83,6 @@ export default class PullToRefresh extends React.Component<PropsType, any> {
     setTimeout(() => {
       this.init(this.props.getScrollContainer() || this.containerRef);
       this.triggerPullToRefresh();
-      this._isMounted = true;
     });
   }
 
@@ -96,8 +94,7 @@ export default class PullToRefresh extends React.Component<PropsType, any> {
   triggerPullToRefresh = () => {
     // 在初始化时、用代码 自动 触发 pullToRefresh
     // 注意：当 direction 为 up 时，当 visible length < content length 时、则看不到效果
-    // 添加this._isMounted的判断，否则组建一实例化，currSt就会是finish
-    if (!this.state.dragOnEdge && this._isMounted) {
+    if (!this.state.dragOnEdge) {
       if (this.props.refreshing) {
         if (this.props.direction === UP) {
           this._lastScreenY = - this.props.distanceToRefresh - 1;
@@ -179,7 +176,11 @@ export default class PullToRefresh extends React.Component<PropsType, any> {
   onTouchMove = (ele: any, e: any) => {
     // 使用 pageY 对比有问题
     const _screenY = e.touches[0].screenY;
-    const { direction } = this.props;
+    const { direction, disable } = this.props;
+
+    if (disable) {
+      return;
+    }
 
     // 拖动方向不符合的不处理
     if (direction === UP && this._startScreenY < _screenY ||
@@ -262,8 +263,8 @@ export default class PullToRefresh extends React.Component<PropsType, any> {
     delete props.damping;
 
     const {
-      className, prefixCls, children, getScrollContainer,
-      direction, onRefresh, refreshing, indicator, distanceToRefresh, ...restProps,
+      className, prefixCls, children, getScrollContainer, disable,
+      direction, onRefresh, refreshing, indicator, distanceToRefresh, ...restProps
     } = props;
 
     const renderChildren = <StaticRenderer
